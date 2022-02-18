@@ -7,7 +7,6 @@ const { capitialize } = require("../utils");
 
 const generateCommonResponse = (resp) => {
   const data = resp;
-  delete data.commonResponse;
   const newProperty = {
     status: {
       type: "string",
@@ -47,10 +46,11 @@ const processFile = async (filePath) => {
   const fileData = JSON.parse(fs.readFileSync(filePath, "utf8"));
   fileData.forEach((data) => {
     let newData = data;
-    delete newData.schemaType;
-    if (data.commonResponse) {
+    if (newData.schemaType === "response") {
+      delete newData.schemaType;
       newData = generateCommonResponse(data);
     }
+    delete newData.schemaType;
     promArr.push(generateSchemaData(newData, data.title, filePath));
   });
   return Promise.all(promArr);
