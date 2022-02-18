@@ -25,19 +25,14 @@ const Routes: FastifyPluginAsync = async (fastify) => {
         body: SingUpInputSchema,
       }),
     },
-    (req, res) => {
-      const {
-        email,
-        password,
-        name,
-      } = req.body;
+    (_req, res) => {
       res.send({
         status: "SUCCESS",
         data: {
-          email,
-          name,
-          id: password,
-          token: "token",
+          name: "",
+          email: "",
+          id: "",
+          token: "",
         },
       });
     },

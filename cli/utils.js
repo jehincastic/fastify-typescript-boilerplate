@@ -15,9 +15,13 @@ const filerTypes = (types) => {
     params: [],
     query: [],
     response: [],
+    responseData: {},
   };
-  types.forEach(({ name, type }) => {
+  types.forEach(({ name, type, data }) => {
     typeObj[type].push(name);
+    if (type === "response") {
+      typeObj.responseData[name] = data;
+    }
   });
   return typeObj;
 };
@@ -29,10 +33,17 @@ const getAllTypes = () => {
   const fileContents = files.map(({ name }) => {
     const filePath = path.join(schemaPath, name);
     const filecontent = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    return filecontent.map(({ title, schemaType }) => ({
-      name: capitialize(title),
-      type: schemaType,
-    }));
+    return filecontent.map((data) => {
+      const { title, schemaType } = data;
+      const returnData = {
+        name: capitialize(title),
+        type: schemaType,
+      };
+      if (schemaType === "response") {
+        returnData.data = data;
+      }
+      return returnData;
+    });
   });
   return filerTypes(fileContents.flat());
 };

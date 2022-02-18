@@ -17,7 +17,7 @@ const generateRouter = async () => {
       ...requestAnswer,
     };
     spinner.start();
-    generateRoutes(answer);
+    generateRoutes(answer, alltypes.responseData[answer.responseType]);
     spinner.succeed("Router generated successfully");
   } catch (error) {
     spinner.fail(error.message);

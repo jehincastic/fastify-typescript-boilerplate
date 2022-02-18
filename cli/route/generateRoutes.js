@@ -86,6 +86,7 @@ const generateBody = (
   queryType,
   paramsType,
   bodyType,
+  respData,
 ) => {
   const requestType = [];
   requestType.push(responseType);
@@ -111,16 +112,54 @@ const generateBody = (
       fastify.${method.toLowerCase()}<CommonRequest<${requestType.join(", ")}>>(
         "/",
         ${schema},
-        (req, res) => {
+        (_req, res) => {
           res.send({
             status: "SUCCESS",
-            data: {},
+            data: ${JSON.stringify(respData, null, 2)},
           });
         },
       );
     };
   `;
   return data;
+};
+
+const getDefaultValue = (schema) => {
+  let value = "";
+  if (schema.type === "string") {
+    value = schema.default || "";
+    if (schema?.items?.enum && Array.isArray(schema?.items?.enum)) {
+      value = schema?.items?.enum?.[0];
+    }
+  } else if (schema.type === "number") {
+    value = schema.default || 0;
+    if (schema?.items?.enum && Array.isArray(schema?.items?.enum)) {
+      value = schema?.items?.enum?.[0];
+    }
+  } else if (schema.type === "boolean") {
+    value = schema.default || false;
+  } else if (schema.type === "array") {
+    value = schema.default || [];
+    if (schema?.items?.enum && Array.isArray(schema?.items?.enum)) {
+      value = [schema?.items?.enum?.[0]];
+    }
+  }
+  return value;
+};
+
+const generateDataFromSchema = (schema, data = {}) => {
+  const propKeys = Object.keys(schema.properties);
+  propKeys.forEach((key) => {
+    const prop = schema.properties[key];
+    if (prop.type === "object") {
+      // eslint-disable-next-line no-param-reassign
+      data[key] = {};
+      generateDataFromSchema(prop, data[key]);
+    } else {
+      // eslint-disable-next-line no-param-reassign
+      data[key] = getDefaultValue(prop);
+    }
+  });
 };
 
 const generateCode = (
@@ -132,7 +171,10 @@ const generateCode = (
   queryType,
   paramsType,
   bodyType,
+  responseSchema,
 ) => {
+  const respData = {};
+  generateDataFromSchema(responseSchema, respData);
   const imports = generateImports(types);
   const exportsData = generateExports();
   const schema = generateReqSchema(
@@ -149,6 +191,7 @@ const generateCode = (
     queryType,
     paramsType,
     bodyType,
+    respData,
   );
   const fileContent = `${imports}\n\n${body}\n\n${exportsData}`;
   const filePath = path.join(process.cwd(), "src", "routes", `${basePath}.ts`);
@@ -167,7 +210,7 @@ const generateRoutes = ({
   queryType,
   paramsType,
   bodyType,
-}) => {
+}, responseSchema) => {
   const basePath = routeName.split("/api/v1/")[1];
   checkIfAlreadyExists(basePath);
   const types = alltypes(responseType, queryType, paramsType, bodyType);
@@ -180,6 +223,7 @@ const generateRoutes = ({
     queryType,
     paramsType,
     bodyType,
+    responseSchema,
   );
   const filePath = `src/routes/${basePath}.ts`;
   execSync(`npx eslint ${filePath} --fix`, { stdio: "inherit" });
