@@ -22,7 +22,23 @@ npm run cli
 Select the `Generate Schema` option. This will generate TypeScript types for your JSON schema in the `src/types/schema` folder.
 
 
-## Tech Stack Used in the Boilerplate
+## Included in the boilerplate
 - Fastify
 - TypeScript
 - Redis
+- File based routing
+- Linting (Eslint)
+
+## Set Up
+Install the dependencies.
+```sh
+npm install
+```
+Build the typescrpt
+```sh
+npm run build
+```
+Start the server in development mode.
+```sh
+npm run dev
+```
