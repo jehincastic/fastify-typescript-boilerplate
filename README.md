@@ -28,3 +28,17 @@ Select the `Generate Schema` option. This will generate TypeScript types for you
 - Redis
 - File based routing
 - Linting (Eslint)
+
+## Set Up
+Install the dependencies.
+```sh
+npm install
+```
+Build the typescrpt
+```sh
+npm run build
+```
+Start the server in development mode.
+```sh
+npm run dev
+```
